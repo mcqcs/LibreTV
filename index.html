@@ -489,25 +489,19 @@
                 const recommendations = await response.json();
 
                 const container = document.getElementById('recommendationsResults');
-                container.innerHTML = ''; // 清空旧内容
-
-                recommendations.forEach(item => {
-                    const safeTitle = encodeURIComponent(item.title);
-                    const card = document.createElement('div');
-                    card.className = 'bg-[#222] p-4 rounded-lg shadow-md';
-                    card.innerHTML = `
-                        <div class="cursor-pointer" onclick="searchRecommendation('${safeTitle}')">
-                            <img src="${item.image}" alt="${item.title}" class="w-full h-40 object-cover rounded-lg mb-2">
-                            <h3 class="text-white text-sm font-bold">${item.title}</h3>
-                            <p class="text-gray-400 text-xs line-clamp-1 overflow-hidden" id="desc-${safeTitle}" data-full-description="${item.description}">
-                                ${item.description.length > 9 ? `${item.description.slice(0, 9)}<span class='text-blue-400 cursor-pointer' onclick='expandDescription("${safeTitle}")'>...更多</span>` : item.description}
+                container.innerHTML = recommendations.map(item => `
+                    <div class="bg-[#222] p-4 rounded-lg shadow-md">
+                        <img src="${item.image}" alt="${item.title}" class="w-full h-40 object-cover rounded-lg mb-2">
+                        <h3 class="text-white text-sm font-bold">${item.title}</h3>
+                        <div class="flex items-center justify-between text-gray-400 text-xs overflow-hidden">
+                            <p id="desc-${item.title}" class="truncate" data-full-description="${item.description}">
+                                ${item.description}
                             </p>
+                            <button class="text-blue-400 text-[10px] ml-2" onclick="expandDescription('${item.title}')">更多</button>
                         </div>
-                    `;
-                    container.appendChild(card);
-                });
-
-                document.getElementById('recommendationsArea').classList.remove('hidden');
+                        <button onclick="deleteRecommendation('${item.title}')" class="mt-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">删除</button>
+                    </div>
+                `).join('');
             } catch (error) {
                 console.error('加载推荐内容失败:', error);
             }
@@ -522,10 +516,18 @@
         function expandDescription(title) {
             const descElement = document.getElementById(`desc-${title}`);
             if (descElement) {
-                // 移除截断样式
-                descElement.classList.remove('line-clamp-1', 'overflow-hidden');
-                // 显示完整内容
-                descElement.innerHTML = descElement.dataset.fullDescription;
+                // 检查是否已经展开，避免重复操作
+                if (descElement.nextElementSibling && descElement.nextElementSibling.classList.contains('full-description')) {
+                    return;
+                }
+
+                // 创建完整描述的元素
+                const fullDescription = document.createElement('p');
+                fullDescription.className = 'text-gray-400 text-xs full-description';
+                fullDescription.textContent = descElement.dataset.fullDescription;
+
+                // 插入到描述元素后面
+                descElement.parentNode.insertBefore(fullDescription, descElement.nextSibling);
             }
         }
 
@@ -539,7 +541,7 @@
     </script>
     <script>
         // 添加版本号以强制刷新缓存
-        const version = '1.0.3'; // 修改版本号以触发更新
+        const version = '1.0.4'; // 修改版本号以触发更新
         const scripts = document.querySelectorAll('script[src], link[rel="stylesheet"]');
         scripts.forEach(script => {
             const src = script.getAttribute('src') || script.getAttribute('href');
