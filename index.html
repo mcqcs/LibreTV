@@ -499,6 +499,10 @@
                             <img src="${item.image}" alt="${item.title}" class="w-full h-40 object-cover rounded-lg mb-2">
                         </a>
                         <h3 class="text-white text-sm font-bold">${item.title}</h3>
+                        <p class="text-gray-400 text-xs line-clamp-1 overflow-hidden" id="desc-${item.title}">
+                            ${item.description}
+                            ${item.description.length > 50 ? `<span class="text-blue-400 cursor-pointer" onclick="expandDescription('${item.title}')">...更多</span>` : ''}
+                        </p>
                     `;
                     container.appendChild(card);
                 });
@@ -513,10 +517,19 @@
 
         // 页面加载时自动加载推荐内容
         document.addEventListener('DOMContentLoaded', fetchRecommendations);
+
+        // 添加展开description的功能
+        function expandDescription(title) {
+            const descElement = document.getElementById(`desc-${title}`);
+            if (descElement) {
+                descElement.classList.remove('line-clamp-1', 'overflow-hidden');
+                descElement.innerHTML = descElement.textContent; // 显示完整内容
+            }
+        }
     </script>
     <script>
         // 添加版本号以强制刷新缓存
-        const version = '1.0.0'; // 修改版本号以触发更新
+        const version = '1.0.1'; // 修改版本号以触发更新
         const scripts = document.querySelectorAll('script[src], link[rel="stylesheet"]');
         scripts.forEach(script => {
             const src = script.getAttribute('src') || script.getAttribute('href');
@@ -529,6 +542,12 @@
                 }
             }
         });
+    </script>
+    <script>
+        // 设置黄色内容过滤开关默认关闭
+        if (localStorage.getItem('yellowFilterEnabled') === null) {
+            localStorage.setItem('yellowFilterEnabled', 'false');
+        }
     </script>
 </body>
 </html>
