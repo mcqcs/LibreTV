@@ -624,6 +624,18 @@ async function search() {
     
     showLoading();
     
+    // Hide the 推荐影片 section when search results are displayed
+    const recommendationsArea = document.getElementById('recommendationsArea');
+    if (recommendationsArea) {
+        recommendationsArea.classList.add('hidden');
+    }
+
+    // Ensure 豆瓣热门 section behaves appropriately (already hidden in the existing code)
+    const doubanArea = document.getElementById('doubanArea');
+    if (doubanArea) {
+        doubanArea.classList.add('hidden');
+    }
+
     try {
         // 保存搜索历史
         saveSearchHistory(query);

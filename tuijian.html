@@ -41,6 +41,41 @@
         </div>
     </div>
 
+    <div id="settingsPanel" class="settings-panel fixed right-0 top-0 h-full w-80 bg-[#111] border-l border-[#333] p-6 z-40 overflow-y-auto" aria-label="设置面板" aria-hidden="true">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold gradient-text">设置</h3>
+            <button onclick="toggleSettings()" class="text-gray-400 hover:text-white" aria-label="关闭设置">&times;</button>
+        </div>
+        <div class="space-y-5">
+            <div class="p-3 bg-[#151515] rounded-lg shadow-inner">
+                <label class="block text-sm font-medium text-gray-400 mb-3 border-b border-[#333] pb-1">数据源设置</label>
+                <div class="flex space-x-2 mb-3">
+                    <button onclick="selectAllAPIs(true)" class="px-2 py-1 bg-[#333] hover:bg-[#444] text-white text-xs rounded">全选</button>
+                    <button onclick="selectAllAPIs(false)" class="px-2 py-1 bg-[#333] hover:bg-[#444] text-white text-xs rounded">全不选</button>
+                    <button onclick="selectAllAPIs(true, true)" class="px-2 py-1 bg-[#333] hover:bg-[#444] text-white text-xs rounded">全选普通资源</button>
+                </div>
+                <div class="max-h-40 overflow-y-auto bg-[#191919] p-2 rounded-lg mb-3">
+                    <div id="apiCheckboxes"></div>
+                </div>
+                <div class="text-xs text-gray-500 flex justify-between items-center">
+                    <span>已选API数量：<span id="selectedApiCount" class="text-white">0</span></span>
+                    <span id="siteStatus" class="ml-2"></span>
+                </div>
+            </div>
+            <div class="p-3 bg-[#151515] rounded-lg shadow-inner">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium text-gray-400 border-b border-[#333] w-full pb-1">自定义API</label>
+                    <button onclick="showAddCustomApiForm()" class="bg-[#333] hover:bg-[#444] text-white w-6 h-6 rounded-full text-center leading-none text-lg ml-1">+</button>
+                </div>
+                <div id="customApisList" class="max-h-32 overflow-y-auto mb-2"></div>
+                <div id="addCustomApiForm" class="hidden mt-2 p-2 bg-[#191919] rounded-lg">
+                    <input type="text" id="customApiName" placeholder="API名称" class="w-full bg-[#222] border border-[#333] text-white px-2 py-1 rounded mb-2" autocomplete="off">
+                    <input type="text" id="customApiUrl" placeholder="https://abc.com" class="w-full bg-[#222] border border-[#333] text-white px-2 py-1 rounded mb-2" autocomplete="off">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let selectedRecommendations = [];
 
