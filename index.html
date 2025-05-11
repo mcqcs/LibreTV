@@ -498,9 +498,8 @@
                         <div class="cursor-pointer" onclick="searchRecommendation('${item.title}')">
                             <img src="${item.image}" alt="${item.title}" class="w-full h-40 object-cover rounded-lg mb-2">
                             <h3 class="text-white text-sm font-bold">${item.title}</h3>
-                            <p class="text-gray-400 text-xs line-clamp-1 overflow-hidden" id="desc-${item.title}">
-                                ${item.description}
-                                ${item.description.length > 50 ? `<span class="text-blue-400 cursor-pointer" onclick="expandDescription('${item.title}')">...更多</span>` : ''}
+                            <p class="text-gray-400 text-xs line-clamp-1 overflow-hidden" id="desc-${item.title}" data-full-description="${item.description}">
+                                ${item.description.length > 50 ? `${item.description.slice(0, 50)}<span class='text-blue-400 cursor-pointer' onclick='expandDescription("${item.title}")'>...更多</span>` : item.description}
                             </p>
                         </div>
                     `;
