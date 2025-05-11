@@ -514,5 +514,21 @@
         // 页面加载时自动加载推荐内容
         document.addEventListener('DOMContentLoaded', fetchRecommendations);
     </script>
+    <script>
+        // 添加版本号以强制刷新缓存
+        const version = '1.0.0'; // 修改版本号以触发更新
+        const scripts = document.querySelectorAll('script[src], link[rel="stylesheet"]');
+        scripts.forEach(script => {
+            const src = script.getAttribute('src') || script.getAttribute('href');
+            if (src) {
+                const newSrc = src.includes('?') ? `${src}&v=${version}` : `${src}?v=${version}`;
+                if (script.tagName === 'SCRIPT') {
+                    script.setAttribute('src', newSrc);
+                } else if (script.tagName === 'LINK') {
+                    script.setAttribute('href', newSrc);
+                }
+            }
+        });
+    </script>
 </body>
 </html>

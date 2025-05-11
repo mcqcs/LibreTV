@@ -1114,6 +1114,66 @@ function saveStringAsFile(content, fileName) {
     window.URL.revokeObjectURL(url);
 }
 
+// 控制推荐影片区域的显示和隐藏，并在需要时加载推荐影片，vscode添加
+function updateRecommendationsVisibility() {
+    const recommendationsArea = document.getElementById('recommendationsArea');
+    if (!recommendationsArea) return;
+
+    const isEnabled = localStorage.getItem('recommendationsEnabled') === 'true';
+    const isSearching = document.getElementById('resultsArea') && 
+        !document.getElementById('resultsArea').classList.contains('hidden');
+
+    // 只有在启用且没有搜索结果显示时才显示推荐影片区域
+    if (isEnabled && !isSearching) {
+        recommendationsArea.classList.remove('hidden');
+        if (document.getElementById('recommendationsResults').children.length === 0) {
+            fetchRecommendations();
+        }
+    } else {
+        recommendationsArea.classList.add('hidden');
+    }
+}
+
+// 渲染推荐影片内容
+async function fetchRecommendations() {
+    const container = document.getElementById('recommendationsResults');
+    if (!container) return;
+
+    // 显示加载状态
+    container.innerHTML = '<div class="text-center text-gray-400 py-8">加载中...</div>';
+
+    try {
+        // 添加时间戳以避免缓存
+        const response = await fetch(`/tuijian.json?timestamp=${Date.now()}`);
+        if (!response.ok) {
+            throw new Error('无法加载推荐影片');
+        }
+
+        const data = await response.json();
+        container.innerHTML = data.map(item => {
+            const shortDescription = item.description.length > 30
+                ? item.description.slice(0, 30) + '...' : item.description;
+
+            return `
+                <div class="card-hover bg-[#111] rounded-lg overflow-hidden cursor-pointer transition-all hover:scale-[1.02] h-full shadow-sm hover:shadow-md" 
+                     onclick="fillSearchInput('${item.title}')">
+                    <img src="${item.image}" alt="${item.title}" class="w-full h-40 object-cover rounded-t-lg">
+                    <div class="p-2">
+                        <h3 class="text-white text-sm font-bold">${item.title}</h3>
+                        <p class="text-gray-400 text-xs">
+                            <span>${shortDescription}</span>
+                            ${item.description.length > 30 ? `<span class="text-blue-500 cursor-pointer" onclick="this.previousSibling.textContent='${item.description}'; this.remove();">展开</span>` : ''}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('加载推荐影片失败:', error);
+        container.innerHTML = '<div class="text-center text-gray-400 py-8">加载失败，请稍后重试</div>';
+    }
+}
+
 // app.js 或路由文件中
 const authMiddleware = require('./middleware/auth');
 const config = require('./config');
