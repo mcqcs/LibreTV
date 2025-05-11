@@ -246,7 +246,7 @@
                     <!-- 标题和刷新按钮 -->
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-xl font-bold text-white">推荐影片</h2>
+                            <h2 class="text-xl font-bold text-white">铁汁推荐</h2>
                             <button id="refreshRecommendations" class="text-sm px-3 py-1 bg-pink-600 hover:bg-pink-700 text-white rounded-lg flex items-center gap-1">
                                 <span>刷新</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -319,7 +319,7 @@
                 <div class="mb-4 md:mb-0">
                     <div class="flex items-center justify-center md:justify-start">
                         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2v8a2 2 0 002 2z"></path>
                         </svg>
                         <span class="gradient-text font-bold">(^з^)-☆</span>
                     </div>
@@ -532,14 +532,14 @@
         function searchRecommendation(title) {
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
-                searchInput.value = title; // 将推荐影片的标题输入到搜索框中
+                searchInput.value = decodeURIComponent(title); // 确保搜索框显示原始文字
                 search(); // 触发搜索功能
             }
         }
     </script>
     <script>
         // 添加版本号以强制刷新缓存
-        const version = '1.0.2'; // 修改版本号以触发更新
+        const version = '1.0.3'; // 修改版本号以触发更新
         const scripts = document.querySelectorAll('script[src], link[rel="stylesheet"]');
         scripts.forEach(script => {
             const src = script.getAttribute('src') || script.getAttribute('href');
