@@ -59,6 +59,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始检查成人API选中状态
     setTimeout(checkAdultAPIsSelected, 100);
+
+    // 页面加载完成后调用
+    loadBBMessage();
 });
 
 // 初始化API复选框
@@ -1183,6 +1186,26 @@ async function fetchRecommendations() {
     } catch (error) {
         console.error('加载推荐影片失败:', error);
         container.innerHTML = '<div class="text-center text-gray-400 py-8">加载失败，请稍后重试</div>';
+    }
+}
+
+// 动态加载 bb.json 中的内容到推荐影片下方的文字区域
+async function loadBBMessage() {
+    try {
+        const response = await fetch('bb.json');
+        if (!response.ok) {
+            console.error('Failed to fetch bb.json');
+            return;
+        }
+        const data = await response.json();
+        const bbMessage = data[0]?.bb || '暂无内容';
+
+        const bbMessageElement = document.getElementById('bbMessage');
+        if (bbMessageElement) {
+            bbMessageElement.textContent = bbMessage;
+        }
+    } catch (error) {
+        console.error('Error loading bb.json:', error);
     }
 }
 

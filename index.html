@@ -259,6 +259,10 @@
                     <div id="recommendationsResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
                         <!-- 推荐内容将通过 JavaScript 动态插入 -->
                     </div>
+                    <!-- 推荐内容下方的文字 -->
+                    <div id="bbMessage" class="text-center gradient-text font-bold text-sm mt-4 px-2">
+                        <!-- 文本内容将通过 JavaScript 动态插入 -->
+                    </div>
                 </div>
             </div>
 
@@ -539,7 +543,7 @@
     </script>
     <script>
         // 添加版本号以强制刷新缓存
-        const version = '1.0.3'; // 修改版本号以触发更新
+        const version = '1.0.9'; // 修改版本号以触发更新
         const scripts = document.querySelectorAll('script[src], link[rel="stylesheet"]');
         scripts.forEach(script => {
             const src = script.getAttribute('src') || script.getAttribute('href');
