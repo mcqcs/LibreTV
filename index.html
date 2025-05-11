@@ -204,6 +204,7 @@
                         <h1 class="text-5xl font-bold gradient-text">(^з^)-☆</h1>
                     </a>
                 </div>
+                <span class="gradient-text font-bold">小戏精的私人影院</span>
                 <p class="text-gray-400 mb-8">顺遂无虞，百无禁忌</p>
             </header>
             
@@ -239,6 +240,28 @@
                 </div>
             </div>
             
+            <!-- 推荐区域 -->
+            <div id="recommendationsArea" class="w-full my-8 hidden">
+                <div class="mx-auto max-w-screen-xl px-2">
+                    <!-- 标题和刷新按钮 -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-white">推荐影片</h2>
+                            <button id="refreshRecommendations" class="text-sm px-3 py-1 bg-pink-600 hover:bg-pink-700 text-white rounded-lg flex items-center gap-1">
+                                <span>刷新</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 推荐内容 -->
+                    <div id="recommendationsResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+                        <!-- 推荐内容将通过 JavaScript 动态插入 -->
+                    </div>
+                </div>
+            </div>
+
             <!-- 豆瓣热门推荐区域: 默认隐藏，现在位于搜索区域下方，调整宽度 -->
             <div id="doubanArea" class="w-full my-8 hidden">
                 <div class="mx-auto max-w-screen-xl px-2">
@@ -298,7 +321,7 @@
                         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                         </svg>
-                        <span class="gradient-text font-bold">LibreTV</span>
+                        <span class="gradient-text font-bold">(^з^)-☆</span>
                     </div>
                     <p class="text-gray-500 text-sm mt-2 text-center md:text-left">顺遂无虞，百无禁忌</p>
                 </div>
@@ -457,6 +480,39 @@
                 });
             }
         });
+    </script>
+    <!-- 推荐影片加载脚本 -->
+    <script>
+        async function fetchRecommendations() {
+            try {
+                const response = await fetch('tuijian.json');
+                const recommendations = await response.json();
+
+                const container = document.getElementById('recommendationsResults');
+                container.innerHTML = ''; // 清空旧内容
+
+                recommendations.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-[#222] p-4 rounded-lg shadow-md';
+                    card.innerHTML = `
+                        <a href="watch.html?title=${encodeURIComponent(item.title)}" target="_blank">
+                            <img src="${item.image}" alt="${item.title}" class="w-full h-40 object-cover rounded-lg mb-2">
+                        </a>
+                        <h3 class="text-white text-sm font-bold">${item.title}</h3>
+                    `;
+                    container.appendChild(card);
+                });
+
+                document.getElementById('recommendationsArea').classList.remove('hidden');
+            } catch (error) {
+                console.error('加载推荐内容失败:', error);
+            }
+        }
+
+        document.getElementById('refreshRecommendations').addEventListener('click', fetchRecommendations);
+
+        // 页面加载时自动加载推荐内容
+        document.addEventListener('DOMContentLoaded', fetchRecommendations);
     </script>
 </body>
 </html>

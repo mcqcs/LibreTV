@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推荐管理 - 小戏精的私人影院</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="libs/tailwindcss.min.js"></script>
+</head>
+<body class="page-bg text-white">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold gradient-text">推荐管理</h1>
+            <p class="text-gray-400">管理推荐内容</p>
+        </header>
+
+        <!-- 搜索框 -->
+        <div class="flex items-center justify-center mb-8">
+            <input type="text" id="searchInput" class="flex-1 bg-[#111] border border-[#333] text-white px-6 py-3 rounded-lg focus:outline-none" placeholder="搜索影视剧..." autocomplete="off">
+            <button onclick="search()" class="ml-4 px-6 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold rounded-lg">搜索</button>
+        </div>
+
+        <!-- 搜索结果 -->
+        <div id="resultsArea" class="w-full">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- 搜索结果将通过 JavaScript 动态插入 -->
+            </div>
+        </div>
+
+        <!-- 当前推荐影片 -->
+        <div class="mt-8">
+            <h2 class="text-xl font-bold text-white mb-4">当前推荐影片</h2>
+            <div id="currentRecommendations" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- 当前推荐影片将通过 JavaScript 动态插入 -->
+            </div>
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="text-center mt-8">
+            <button onclick="submitRecommendations()" class="px-6 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold rounded-lg">提交推荐</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedRecommendations = [];
+
+        async function search() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                alert('请输入搜索关键词');
+                return;
+            }
+
+            const selectedAPIs = JSON.parse(localStorage.getItem('selectedAPIs') || '[]');
+            if (selectedAPIs.length === 0) {
+                alert('请至少选择一个API源');
+                return;
+            }
+
+            try {
+                const searchPromises = selectedAPIs.map(async (apiId) => {
+                    let apiUrl;
+                    if (apiId.startsWith('custom_')) {
+                        const customIndex = apiId.replace('custom_', '');
+                        const customApi = getCustomApiInfo(customIndex);
+                        if (!customApi) return [];
+
+                        apiUrl = customApi.url + API_CONFIG.search.path + encodeURIComponent(query);
+                    } else {
+                        if (!API_SITES[apiId]) return [];
+                        apiUrl = API_SITES[apiId].api + API_CONFIG.search.path + encodeURIComponent(query);
+                    }
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+                    try {
+                        const response = await fetch(PROXY_URL + encodeURIComponent(apiUrl), {
+                            headers: API_CONFIG.search.headers,
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) {
+                            console.warn(`API ${apiId} 搜索失败:`, response.status);
+                            return [];
+                        }
+
+                        const data = await response.json();
+                        return data.list || [];
+                    } catch (error) {
+                        clearTimeout(timeoutId);
+                        console.warn(`API ${apiId} 请求失败:`, error);
+                        return [];
+                    }
+                });
+
+                const resultsArray = await Promise.all(searchPromises);
+                const allResults = resultsArray.flat();
+
+                const resultsContainer = document.getElementById('resultsArea');
+                resultsContainer.innerHTML = allResults.map(item => `
+                    <div class="bg-[#222] p-4 rounded-lg shadow-md">
+                        <img src="${item.vod_pic}" alt="${item.vod_name}" class="w-full h-40 object-cover rounded-lg mb-2">
+                        <h3 class="text-white text-sm font-bold">${item.vod_name}</h3>
+                        <p class="text-gray-400 text-xs">${item.vod_remarks || '暂无介绍'}</p>
+                        <input type="checkbox" class="mt-2" onchange="toggleSelection('${item.vod_name}', '${item.vod_remarks}', '${item.vod_pic}', this)"> 选择
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('搜索失败:', error);
+                alert('搜索失败，请稍后重试');
+            }
+        }
+
+        function toggleSelection(title, description, image, checkbox) {
+            const recommendation = { title, description, image };
+            if (checkbox.checked) {
+                selectedRecommendations.push(recommendation);
+            } else {
+                selectedRecommendations = selectedRecommendations.filter(item => item.title !== title);
+            }
+        }
+
+        async function submitRecommendations() {
+            if (selectedRecommendations.length === 0) {
+                alert('请选择至少一部影片');
+                return;
+            }
+
+            try {
+                const response = await fetch('tuijian.json', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(selectedRecommendations, null, 2)
+                });
+
+                if (response.ok) {
+                    alert('推荐已更新！');
+                } else {
+                    alert('更新失败，请检查配置');
+                }
+            } catch (error) {
+                console.error('提交推荐失败:', error);
+            }
+        }
+
+        async function loadCurrentRecommendations() {
+            try {
+                const response = await fetch('tuijian.json');
+                const recommendations = await response.json();
+
+                const container = document.getElementById('currentRecommendations');
+                container.innerHTML = ''; // 清空旧内容
+
+                recommendations.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-[#222] p-4 rounded-lg shadow-md';
+                    card.innerHTML = `
+                        <img src="${item.image}" alt="${item.title}" class="w-full h-40 object-cover rounded-lg mb-2">
+                        <h3 class="text-white text-sm font-bold">${item.title}</h3>
+                        <p class="text-gray-400 text-xs">${item.description}</p>
+                        <button onclick="deleteRecommendation('${item.title}')" class="mt-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">删除</button>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('加载当前推荐影片失败:', error);
+            }
+        }
+
+        async function deleteRecommendation(title) {
+            const currentData = await fetchTuijian();
+            const updatedData = currentData.filter(item => item.title !== title);
+            await updateTuijian(updatedData);
+        }
+
+        async function fetchTuijian() {
+            try {
+                const response = await fetch('/api/proxy/github/tuijian.json');
+                if (!response.ok) {
+                    throw new Error('无法加载推荐数据');
+                }
+                const data = await response.json();
+                console.log('当前推荐数据:', data);
+                return data;
+            } catch (error) {
+                console.error('加载推荐数据失败:', error);
+                alert('加载推荐数据失败，请稍后重试');
+            }
+        }
+
+        async function updateTuijian(newContent) {
+            try {
+                const response = await fetch('/api/proxy/github/tuijian.json', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: '更新推荐数据',
+                        content: btoa(unescape(encodeURIComponent(JSON.stringify(newContent, null, 2)))),
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('更新推荐数据失败');
+                }
+
+                alert('推荐数据已更新！');
+            } catch (error) {
+                console.error('更新推荐数据失败:', error);
+                alert('更新推荐数据失败，请稍后重试');
+            }
+        }
+
+        async function addRecommendation(newRecommendation) {
+            const currentData = await fetchTuijian();
+            currentData.push(newRecommendation);
+            await updateTuijian(currentData);
+        }
+
+        // 页面加载时自动加载当前推荐影片
+        document.addEventListener('DOMContentLoaded', loadCurrentRecommendations);
+    </script>
+</body>
+</html>
